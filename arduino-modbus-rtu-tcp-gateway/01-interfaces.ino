@@ -1,8 +1,17 @@
+#define mySerial Serial2
+#define RX_485_PIN  16
+#define TX_485_PIN  17
+#define DE_485_PIN  18
+
+
+
 void startSerial() {
 #ifdef DEBUG
-	Serial.begin(115200);
+//	Serial.begin(DBG_BITRATE);
 #endif
-	mySerial.begin(9600, SERIAL_8N1);
+	mySerial.begin(MBUS_BITRATE, SERIAL_8N1, RX_485_PIN, TX_485_PIN);
+  pinMode(DE_485_PIN, OUTPUT);
+  
 	// Calculate Modbus RTU character timeout and frame delay
 	byte bits =                                         // number of bits per character (11 in default Modbus RTU settings)
     1 +                                               // start bit

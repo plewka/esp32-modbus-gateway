@@ -1,4 +1,4 @@
-#include <ArduinoRS485.h>
+//#include <ArduinoRS485.h>
 
 
 #include <CircularBuffer.h>
@@ -6,7 +6,9 @@
 #include <WiFi.h>
 
 #define SCAN_REQUEST 0xFE 
-#define mySerial Serial2   
+
+//RS485_DEFAULT_TX_PIN
+
 #define DEBUG  1        
 
 #ifdef DEBUG
@@ -20,13 +22,18 @@
 /****** ADVANCED SETTINGS ******/
 
 const byte reqQueueCount = 15;
-const int reqQueueSize = 256; 
+const int  reqQueueSize = 256; 
 const byte maxSlaves = 247; 
-const int modbusSize = 256; 
+const int  modbusSize = 256; 
 const byte scanCommand[] = {0x03, 0x00, 0x00, 0x00, 0x01}; 
 
-const char *ssid = "Harish";
-const char *password = "23@harish";
+const char *ssid = "Nirvana";
+const char *password = "esw54bjzgu89";
+
+//WiFiServer server(80);
+
+const uint16_t MBUS_BITRATE = 19200;
+const uint32_t DBG_BITRATE = 115200;
 
 /****** DEFAULT FACTORY SETTINGS ******/
 
@@ -48,14 +55,14 @@ typedef struct
 
 const config_type defaultConfig = {
   { 0x90, 0xA2, 0xDA },  // mac (bytes 4, 5 and 6 will be generated randomly)
-  {192, 168, 1, 254},    // ip
+  {192, 168, 5, 254},    // ip
   {255, 255, 255, 0},    // subnet
-  {192, 168, 1, 1},      // gateway
-  {192, 168, 1, 1},      // dns
+  {192, 168, 5, 1},      // gateway
+  {192, 168, 5, 1},      // dns
   502,                   // tcpPort
   80,                    // webPort
   false,                 // enableRtuOverTcp
-  9600,                  // baud
+  19200,                 // baud
   SERIAL_8N1,            // serialConfig
   500,                   // serialTimeout
   1                      // serialRetry
@@ -144,11 +151,18 @@ unsigned long ethRxCount = 0;
 
 void setup()
 {
+#ifdef DEBUG
+  Serial.begin(DBG_BITRATE);
+#endif
+  dbgln(F("\n[arduino] Init..."));
   CreateTrulyRandomSeed();
   localConfig = defaultConfig;
+  dbgln(F("\n[arduino] Init Serial..."));
   startSerial();
+  dbgln(F("\n[arduino] Init WiFi..."));
   startWifi();
   dbgln(F("\n[arduino] Starting..."));
+  //webserver_setup();
 }
 
 /****** LOOP ******/
@@ -157,6 +171,8 @@ void loop()
 {
 	CheckWiFiConn();
   recvWeb();
+
+  //webserver_loop();  
 	recvTcp();
 	processRequests();
 	sendSerial();

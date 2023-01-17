@@ -133,7 +133,7 @@ void processRequests()
 
 byte checkRequest(byte buffer[], unsigned int bufferSize) {
   byte address;
-  int i;
+//  int i;
   
   if (localConfig.enableRtuOverTcp) 
     address = buffer[0];

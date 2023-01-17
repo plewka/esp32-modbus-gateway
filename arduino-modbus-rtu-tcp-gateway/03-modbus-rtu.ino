@@ -1,4 +1,5 @@
 #define SERIAL_TX_BUFFER_SIZE 128
+
 int rxNdx = 0;
 int txNdx = 0;
 bool rxErr = false;
@@ -7,11 +8,23 @@ MicroTimer rxDelay;
 MicroTimer rxTimeout;
 MicroTimer txDelay;
 
+void EndTransmission485 () {
+      while (! (mySerial.availableForWrite() == SERIAL_TX_BUFFER_SIZE - 1)); // stuck when not sent
+      digitalWrite(DE_485_PIN,LOW);
+}
+
+void BeginTransmission485 () {
+      digitalWrite(DE_485_PIN,HIGH);
+}
+
+
 void sendSerial()
 {
   if (serialState == SENDING && rxNdx == 0) {        // avoid bus collision, only send when we are not receiving data
     if (mySerial.availableForWrite() > 0 && txNdx == 0) {
       crc = 0xFFFF;
+      BeginTransmission485();
+      
       mySerial.write(queueHeaders.first().uid);        // send uid (address)
       calculateCRC(queueHeaders.first().uid);
     }
@@ -48,6 +61,7 @@ void sendSerial()
       queueRetries.unshift(queueRetries.shift() + 1);
     }
   }
+ EndTransmission485 ();
 }
 
 void recvSerial()
